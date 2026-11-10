@@ -341,6 +341,10 @@ button.chip{cursor:pointer;background:rgba(255,181,71,.18);color:#FFE08A}
   .tree-tools .seg{order:3;width:100%;justify-content:space-between}
   .tree-tools .seg button{padding:6px 8px;font-size:12px}
 }
+.ed-th .ed-undo{position:absolute;inset:0;display:none;place-items:center;text-align:center;font-size:11px;line-height:1.4;background:rgba(120,10,10,.72);color:#fff}
+.ed-th.gone .ed-undo{display:grid}
+.ed-th.gone img{filter:grayscale(1)}
+.ed-th[data-oref]{cursor:pointer}
 </style>
 </head>
 <body>
@@ -814,10 +818,10 @@ $("#vbClose").addEventListener("click", closeVideo);
 $("#vbox").addEventListener("click", e => { if(e.target.id === "vbox") closeVideo(); });
 
 /* ================= إضافة البيانات والصور ================= */
-const ED = { id:null, photos:[], video:null, busy:false };
+const ED = { id:null, photos:[], video:null, busy:false, del:new Set() };
 function openEditor(id){
   const o = parts.get(id); if(!o) return;
-  ED.id = id; ED.photos = []; ED.video = null; ED.busy = false;
+  ED.id = id; ED.photos = []; ED.video = null; ED.busy = false; ED.del = new Set();
   const f = (k,label,val,multi) => `<label class="ef"><span>${label}</span>${multi
     ? `<textarea data-f="${k}" rows="3">${esc(val||"")}</textarea>`
     : `<input data-f="${k}" value="${esc(val||"")}">`}</label>`;
@@ -834,6 +838,9 @@ function openEditor(id){
     ${f("box","رقم الصندوق",o.box ? (o.box.startsWith("BOX-") ? String(parseInt(o.box.slice(4),10)) : o.box) : "",false)}
     ${f("notes","ملاحظات عامة",o.notes,true)}
 
+    ${USER.media && (o.photoRefs||[]).length ? `<div class="ef"><span>الصور الحالية</span>
+      <div class="ed-thumbs" id="edOld">${o.photoRefs.map(([ref]) => `<div class="ed-th" data-oref="${ref}"><span class="ph-load"></span><button class="ed-x" data-delref="${ref}" aria-label="شيل الصورة">✕</button><span class="ed-undo">هتتشال<br>دوس للتراجع</span></div>`).join("")}</div>
+    </div>` : ""}
     <div class="ef"><span>صور جديدة</span>
       <div class="ed-thumbs" id="edThumbs"></div>
       <div class="ed-pick">
@@ -873,6 +880,13 @@ function openEditor(id){
   $("#edVidCam").addEventListener("change", onVid);
   $("#edVid").addEventListener("change", onVid);
   $("#edSave").addEventListener("click", saveEditor);
+  document.querySelectorAll("#edOld .ed-th").forEach(el => {
+    loadImg(el.dataset.oref).then(src => { el.querySelector(".ph-load").outerHTML = `<img src="${src}" alt="">`; }).catch(() => {});
+    el.addEventListener("click", () => {
+      const r = el.dataset.oref;
+      if(ED.del.has(r)){ ED.del.delete(r); el.classList.remove("gone"); } else { ED.del.add(r); el.classList.add("gone"); }
+    });
+  });
 }
 function addPhotoFile(fl){
   if(!/^image\//.test(fl.type)) return;
@@ -915,12 +929,13 @@ async function saveEditor(){
   document.querySelectorAll("#card [data-f]").forEach(el => { const v = el.value.trim(); if(v !== (cur[el.dataset.f]||"").trim()) fields[el.dataset.f] = v; });
   const link = $("#edVLink").value.trim();
   if(link && !ED.video) fields.video = link;
-  const steps = (Object.keys(fields).length ? 1 : 0) + ED.photos.length + (ED.video ? 1 : 0);
+  const steps = (Object.keys(fields).length ? 1 : 0) + ED.del.size + ED.photos.length + (ED.video ? 1 : 0);
   if(!steps){ $("#edErr").textContent = "مفيش حاجة جديدة تتحفظ"; return; }
   ED.busy = true; $("#edSave").disabled = true;
   let done = 0;
   try{
     if(Object.keys(fields).length){ prog(0, "جاري حفظ البيانات…"); await post({action:"save", id:ED.id, fields}); done++; }
+    for(const ref of ED.del){ prog(done/steps, "جاري شيل الصور…"); await post({action:"delPhoto", id:ED.id, ref}); imgCache.delete(ref); done++; }
     const desc = $("#edPhDesc").value.trim();
     for(let i=0;i<ED.photos.length;i++){
       prog(done/steps, `جاري رفع صورة ${i+1} من ${ED.photos.length}…`);
