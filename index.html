@@ -271,6 +271,26 @@ button.chip{cursor:pointer;background:rgba(255,181,71,.18);color:#FFE08A}
 .vb-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 @media (max-width:860px){.who{display:none}}
 @media (prefers-reduced-motion:reduce){.spin,.ph-load{animation:none}}
+
+.card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.ed .ef{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.ed .ef > span{font-size:13px;color:var(--muted)}
+.ed input,.ed textarea{width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--glass-line);background:rgba(6,10,34,.7);font-size:15px;resize:vertical;line-height:1.6}
+.ed input:focus,.ed textarea:focus{outline:none;border-color:var(--gold)}
+.ed-pick{display:flex;gap:8px;flex-wrap:wrap}
+.ed-pick .btn{cursor:pointer}
+.ed-thumbs{display:flex;flex-wrap:wrap;gap:8px}
+.ed-thumbs:empty{display:none}
+.ed-th{position:relative;width:84px;height:84px;border-radius:10px;overflow:hidden;background:#0A0F33}
+.ed-th img{width:100%;height:100%;object-fit:cover;display:block}
+.ed-x{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer;font-size:12px;line-height:24px;padding:0}
+.ed-vname{font-size:13px;color:var(--ink);display:flex;align-items:center;gap:8px}
+.ed-vname:empty{display:none}
+.ed-vname .ed-x{position:static}
+.ed-note{color:var(--muted);font-size:12px}
+.ed-prog{display:flex;flex-direction:column;gap:6px;margin:6px 0 8px;font-size:13px;color:var(--muted)}
+.ed-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.ed-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold-2));transition:width .3s}
 </style>
 </head>
 <body>
@@ -385,7 +405,7 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 /* ================= data ================= */
 const TYPE = {"M":["ميكانيكا","M"],"E":["كهرباء","E"],"M&E":["ميكانيكا وكهرباء","ME"],"Parent":["قسم","P"],"Main part":["الخط","P"],"":["بدون تصنيف",""]};
 const TYPE_COLOR = {M:"#6EA8FF",E:"#FFD166",ME:"#5EE6C8",P:"#C59BFF","":"#8E95B8"};
-let parts = new Map(), kids = new Map(), ROOT = null, boxes = [], boxById = new Map(), USER = {name:"", media:false};
+let parts = new Map(), kids = new Map(), ROOT = null, boxes = [], boxById = new Map(), USER = {name:"", media:false, edit:false};
 const pathOf = id => { const out=[]; let c=parts.get(id), g=0; while(c && g++<25){ out.unshift(c); c=parts.get(c.p); } return out; };
 const descendants = id => { const out=[]; (kids.get(id)||[]).forEach(k=>{ out.push(k); out.push(...descendants(k)); }); return out; };
 const tyOf = o => TYPE[o.t] || TYPE[""];
@@ -661,7 +681,10 @@ function openPart(id){
       <div><dt>الفيديو</dt>${!o.hasVideo ? `<dd class="none">لم يُضف بعد</dd>` : USER.media ? `<dd><button class="btn" data-video="${o.id}" style="margin-top:4px">شغّل الفيديو</button></dd>` : `<dd class="none">مش متاح لحسابك</dd>`}</div>
       ${o.notes?field("ملاحظات عامة",o.notes):""}
     </dl>
-    <button class="btn ghost" data-gotree="${o.id}">مكانه في الشجرة</button>
+    <div class="card-actions">
+      ${USER.edit?`<button class="btn" data-edit="${o.id}">إضافة بيانات وصور</button>`:""}
+      <button class="btn ghost" data-gotree="${o.id}">مكانه في الشجرة</button>
+    </div>
     ${ch.length?`<h3>الأجزاء الفرعية</h3><ul class="rows">${ch.map(c=>rowHtml(c, `<span class="code">${c.box||""}</span>`)).join("")}</ul>`:""}
     <h3>كود الستيكر</h3>
     <div class="qrrow"><div class="qr">${qrSvg(o.id)}</div><span class="code" style="color:var(--muted)">${o.id}</span></div>
@@ -701,9 +724,158 @@ function closeVideo(){ $("#vbox").hidden = true; $("#vbFrame").innerHTML = ""; }
 $("#vbClose").addEventListener("click", closeVideo);
 $("#vbox").addEventListener("click", e => { if(e.target.id === "vbox") closeVideo(); });
 
-function closePart(){ $("#modal").hidden = true; }
+/* ================= إضافة البيانات والصور ================= */
+const ED = { id:null, photos:[], video:null, busy:false };
+function openEditor(id){
+  const o = parts.get(id); if(!o) return;
+  ED.id = id; ED.photos = []; ED.video = null; ED.busy = false;
+  const f = (k,label,val,multi) => `<label class="ef"><span>${label}</span>${multi
+    ? `<textarea data-f="${k}" rows="3">${esc(val||"")}</textarea>`
+    : `<input data-f="${k}" value="${esc(val||"")}">`}</label>`;
+  $("#card").innerHTML = `
+  <div class="card-hd">
+    <button class="icon-btn" data-back="${id}" aria-label="رجوع"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="card-code">${o.id}</div>
+    <h1>${esc(o.n)}</h1>
+  </div>
+  <div class="card-bd ed">
+    ${f("desc","الوصف",o.desc,true)}
+    ${f("spec","المواصفات الفنية",o.spec,true)}
+    ${f("asm","ملاحظات الفك والتركيب",o.asm,true)}
+    ${f("box","رقم الصندوق",o.box ? (o.box.startsWith("BOX-") ? String(parseInt(o.box.slice(4),10)) : o.box) : "",false)}
+    ${f("notes","ملاحظات عامة",o.notes,true)}
+
+    <div class="ef"><span>صور جديدة</span>
+      <div class="ed-thumbs" id="edThumbs"></div>
+      <div class="ed-pick">
+        <label class="btn ghost">صوّر<input type="file" accept="image/*" capture="environment" id="edCam" hidden></label>
+        <label class="btn ghost">من المعرض<input type="file" accept="image/*" multiple id="edGal" hidden></label>
+      </div>
+      <input id="edPhDesc" placeholder="وصف الصور (اختياري)">
+    </div>
+
+    <div class="ef"><span>فيديو</span>
+      ${o.hasVideo?`<small class="ed-note">الجزء ده عليه فيديو. لو ضفت فيديو جديد هيحل مكانه، والقديم يفضل متسجل في سجل التعديلات.</small>`:""}
+      <div class="ed-pick">
+        <label class="btn ghost">صوّر فيديو<input type="file" accept="video/*" capture="environment" id="edVidCam" hidden></label>
+        <label class="btn ghost">من المعرض<input type="file" accept="video/*" id="edVid" hidden></label>
+      </div>
+      <div class="ed-vname" id="edVName"></div>
+      <input id="edVLink" placeholder="أو الصق لينك فيديو (YouTube أو Drive)" dir="ltr">
+    </div>
+
+    <div class="ed-prog" id="edProg" hidden><div class="ed-bar"><i id="edBar"></i></div><span id="edMsg"></span></div>
+    <div class="err" id="edErr" role="alert"></div>
+    <div class="card-actions">
+      <button class="btn" id="edSave">حفظ</button>
+      <button class="btn ghost" data-back="${id}">إلغاء</button>
+    </div>
+  </div>`;
+  $("#card").scrollTop = 0;
+  const onPhotos = e => { [...e.target.files].forEach(addPhotoFile); e.target.value = ""; };
+  $("#edCam").addEventListener("change", onPhotos);
+  $("#edGal").addEventListener("change", onPhotos);
+  const onVid = e => {
+    const fl = e.target.files[0]; e.target.value = ""; if(!fl) return;
+    if(fl.size > 100*1024*1024){ $("#edErr").textContent = "الفيديو أكبر من 100 ميجا. صوّر فيديو أقصر أو حط لينك."; return; }
+    ED.video = fl; $("#edVName").innerHTML = `${esc(fl.name)} <span class="code">${(fl.size/1048576).toFixed(1)} MB</span> <button class="ed-x" id="edVX" aria-label="شيل الفيديو">✕</button>`;
+    $("#edVX").addEventListener("click", () => { ED.video = null; $("#edVName").innerHTML = ""; });
+  };
+  $("#edVidCam").addEventListener("change", onVid);
+  $("#edVid").addEventListener("change", onVid);
+  $("#edSave").addEventListener("click", saveEditor);
+}
+function addPhotoFile(fl){
+  if(!/^image\//.test(fl.type)) return;
+  const item = {file:fl, url:URL.createObjectURL(fl)};
+  ED.photos.push(item);
+  const el = document.createElement("div");
+  el.className = "ed-th";
+  el.innerHTML = `<img src="${item.url}" alt=""><button class="ed-x" aria-label="شيل الصورة">✕</button>`;
+  el.querySelector("button").addEventListener("click", () => { ED.photos = ED.photos.filter(x => x !== item); el.remove(); });
+  $("#edThumbs").appendChild(el);
+}
+function shrinkImage(fl, max=1600, q=0.82){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      res(c.toDataURL("image/jpeg", q).split(",")[1]);
+    };
+    img.onerror = rej;
+    img.src = URL.createObjectURL(fl);
+  });
+}
+const toB64 = buf => { let s = "", b = new Uint8Array(buf); for(let i=0;i<b.length;i+=0x8000) s += String.fromCharCode.apply(null, b.subarray(i,i+0x8000)); return btoa(s); };
+function prog(p, msg){ $("#edProg").hidden = false; $("#edBar").style.width = Math.round(p*100) + "%"; $("#edMsg").textContent = msg; }
+async function post(body){
+  const r = await apiPost(Object.assign({token:SESSION.token}, body));
+  if(!r.ok) throw new Error(r.error);
+  return r;
+}
+const ERR_TXT = {no_edit:"حسابك مش مسموحله يضيف بيانات", auth:"انتهت الجلسة، سجّل دخول تاني", part_not_found:"الجزء ده مش موجود في الشيت", too_big:"الفيديو أكبر من 100 ميجا", upload_expired:"الرفع اتأخر، جرّب تاني"};
+async function saveEditor(){
+  if(ED.busy) return;
+  const o = parts.get(ED.id); if(!o) return;
+  $("#edErr").textContent = "";
+  const cur = {desc:o.desc||"", spec:o.spec||"", asm:o.asm||"", notes:o.notes||"", box:o.box ? (o.box.startsWith("BOX-") ? String(parseInt(o.box.slice(4),10)) : o.box) : ""};
+  const fields = {};
+  document.querySelectorAll("#card [data-f]").forEach(el => { const v = el.value.trim(); if(v !== (cur[el.dataset.f]||"").trim()) fields[el.dataset.f] = v; });
+  const link = $("#edVLink").value.trim();
+  if(link && !ED.video) fields.video = link;
+  const steps = (Object.keys(fields).length ? 1 : 0) + ED.photos.length + (ED.video ? 1 : 0);
+  if(!steps){ $("#edErr").textContent = "مفيش حاجة جديدة تتحفظ"; return; }
+  ED.busy = true; $("#edSave").disabled = true;
+  let done = 0;
+  try{
+    if(Object.keys(fields).length){ prog(0, "جاري حفظ البيانات…"); await post({action:"save", id:ED.id, fields}); done++; }
+    const desc = $("#edPhDesc").value.trim();
+    for(let i=0;i<ED.photos.length;i++){
+      prog(done/steps, `جاري رفع صورة ${i+1} من ${ED.photos.length}…`);
+      const b64 = await shrinkImage(ED.photos[i].file);
+      await post({action:"addPhoto", id:ED.id, b64, mime:"image/jpeg", desc});
+      done++;
+    }
+    if(ED.video){
+      const v = ED.video;
+      const s = await post({action:"videoStart", id:ED.id, size:v.size, mime:v.type||"video/mp4", name:v.name});
+      let start = 0;
+      while(start < v.size){
+        prog((done + start/v.size)/steps, `جاري رفع الفيديو ${Math.round(start/v.size*100)}%…`);
+        const buf = await v.slice(start, Math.min(start + s.chunk, v.size)).arrayBuffer();
+        const r = await post({action:"videoChunk", uploadId:s.uploadId, start, b64:toB64(buf)});
+        if(r.done) break;
+        start = r.next;
+      }
+      done++;
+    }
+    prog(1, "تم الحفظ، جاري تحديث البيانات…");
+    await refreshData();
+    openPart(ED.id);
+  }catch(err){
+    const k = String(err.message||"");
+    $("#edErr").textContent = (ERR_TXT[k] || "حصلت مشكلة في الحفظ") + (done ? ` (اتحفظ ${done} من ${steps})` : "") + ". اتأكد من النت وجرّب تاني.";
+    $("#edProg").hidden = true;
+  }
+  ED.busy = false; const sv = $("#edSave"); if(sv) sv.disabled = false;
+}
+async function refreshData(){
+  const d = await api({action:"data", token:SESSION.token});
+  if(!d.ok) throw new Error(d.error);
+  store("iraqline_cache", d); ingest(d);
+  const sel = currentBox && currentBox.id;
+  SHIP.built = false;
+  if(!$("#pg-ship").hidden){ buildShip(); if(sel && boxById.has(sel)) openBox(sel); else closeBox(); }
+}
+
+function closePart(){ if(ED.busy) return; $("#modal").hidden = true; }
 $("#modal").addEventListener("click", e => {
   if(e.target.id==="modal" || e.target.closest("[data-close]")) return closePart();
+  const ed = e.target.closest("[data-edit]"); if(ed){ openEditor(ed.dataset.edit); return; }
+  const bk = e.target.closest("[data-back]"); if(bk){ if(!ED.busy) openPart(bk.dataset.back); return; }
   const gb = e.target.closest("[data-gobox]"); if(gb){ const pid=$("#card .card-code").textContent; closePart(); setTab("ship"); setTimeout(()=>openBox(gb.dataset.gobox,pid),60); return; }
   const gt = e.target.closest("[data-gotree]"); if(gt){ closePart(); closeBox(); setTab("tree"); setTimeout(()=>focusPart(gt.dataset.gotree),80); return; }
   const vd = e.target.closest("[data-video]"); if(vd){ playVideo(vd.dataset.video); return; }
