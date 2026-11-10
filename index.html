@@ -291,6 +291,56 @@ button.chip{cursor:pointer;background:rgba(255,181,71,.18);color:#FFE08A}
 .ed-prog{display:flex;flex-direction:column;gap:6px;margin:6px 0 8px;font-size:13px;color:var(--muted)}
 .ed-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
 .ed-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold-2));transition:width .3s}
+
+.seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:12px;border:1px solid var(--glass-line);background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.seg button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:7px 12px;border-radius:9px;cursor:pointer;color:var(--muted);font-size:14px;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:rgba(255,181,71,.18);color:var(--ink)}
+.seg .dot{width:8px;height:8px}
+.items-page{overflow:auto;padding:14px 18px 40px}
+.it-inner{max-width:1240px;margin:0 auto}
+.it-bar{display:flex;gap:8px;margin-bottom:10px}
+.it-bar input{flex:1;min-width:0;padding:13px 16px;border-radius:14px;border:1px solid var(--glass-line);background:var(--glass);font-size:16px}
+.it-bar input:focus,.it-filters select:focus{outline:none;border-color:var(--gold)}
+.it-bar .icon-btn{width:50px;height:50px;border-radius:14px;color:var(--gold)}
+.it-filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}
+.it-filters select{padding:9px 12px;border-radius:12px;border:1px solid var(--glass-line);background:var(--space-1);color:var(--ink);max-width:220px}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);cursor:pointer;padding:0 4px}
+.chk input{accent-color:var(--gold);width:16px;height:16px}
+#iExport{display:inline-flex;align-items:center;gap:6px;margin-inline-start:auto}
+.it-count{font-size:13px;color:var(--muted);margin:6px 4px 8px}
+.it-table{border-radius:16px;border:1px solid var(--glass-line);background:var(--glass);overflow:hidden}
+.it-row{display:grid;grid-template-columns:64px 96px minmax(160px,1.4fr) minmax(120px,1fr) 128px 84px minmax(140px,1.2fr);align-items:center;gap:12px;width:100%;padding:8px 14px;border:0;border-top:1px solid var(--line);background:none;text-align:start;cursor:pointer;font-size:14px}
+.it-row:hover{background:rgba(150,162,220,.08)}
+.it-hd{cursor:default;border-top:0;font-size:12px;color:var(--dim);padding-top:12px;padding-bottom:10px;background:rgba(6,10,30,.35)}
+.it-hd:hover{background:rgba(6,10,30,.35)}
+.it-row > span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.c-th{position:relative;width:56px;height:56px}
+.th,.th-none{display:block;width:56px;height:56px;border-radius:10px;overflow:hidden;background:rgba(150,162,220,.08)}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th-none{display:grid;place-items:center;color:var(--dim);font-size:12px}
+.th-n{position:absolute;bottom:-4px;left:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--gold);color:var(--gold-ink);font-style:normal;font-size:11px;font-weight:700;display:grid;place-items:center}
+.c-cd{font-size:13px;color:var(--muted)}
+.c-nm{font-weight:500}
+.c-sec,.c-sp{color:var(--muted);font-size:13px;white-space:nowrap}
+.c-ty{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.c-bx{white-space:nowrap}
+.it-more{display:block;margin:14px auto 0}
+@media (max-width:860px){
+  .items-page{padding:12px 12px 30px}
+  .it-filters select{flex:1;min-width:0;max-width:none}
+  #iExport{width:100%;justify-content:center;margin:0}
+  .it-hd{display:none}
+  .it-row{grid-template-columns:56px minmax(0,1fr) auto;grid-template-areas:"th nm bx" "th cd ty" "th sec sec";gap:2px 12px;padding:10px 12px}
+  .c-th{grid-area:th;align-self:start}
+  .c-nm{grid-area:nm;white-space:normal}
+  .c-cd{grid-area:cd}
+  .c-bx{grid-area:bx;font-size:12px;color:var(--gold)}
+  .c-ty{grid-area:ty;font-size:12px;color:var(--muted)}
+  .c-sec{grid-area:sec;font-size:12px}
+  .c-sp{display:none}
+  .tree-tools .seg{order:3;width:100%;justify-content:space-between}
+  .tree-tools .seg button{padding:6px 8px;font-size:12px}
+}
 </style>
 </head>
 <body>
@@ -316,6 +366,7 @@ button.chip{cursor:pointer;background:rgba(255,181,71,.18);color:#FFE08A}
     <nav class="tabs" role="tablist">
       <button role="tab" data-tab="ship" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 21 8v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>الصناديق</button>
       <button role="tab" data-tab="tree" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="19" cy="12" r="2"/><circle cx="6" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="6" cy="19" r="2"/><path d="M17 12H8M14 12c-2 0-2-7-6-7M14 12c-2 0-2 7-6 7"/></svg>الشجرة</button>
+      <button role="tab" data-tab="items" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 9v11"/></svg>الأصناف</button>
       <button role="tab" data-tab="search" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/></svg>البحث</button>
     </nav>
     <span class="offline" id="offline" hidden>بدون إنترنت</span>
@@ -342,6 +393,9 @@ button.chip{cursor:pointer;background:rgba(255,181,71,.18);color:#FFE08A}
           <input id="tq" placeholder="ابحث في الشجرة" aria-label="ابحث في الشجرة" autocomplete="off">
           <div class="sugg" id="tsugg" hidden><ul class="rows" id="tsuggList"></ul></div>
         </div>
+        <div class="seg" id="tType" role="group" aria-label="نوع المكون">
+          <button data-ty="" aria-pressed="true">الكل</button><button data-ty="M" aria-pressed="false"><span class="dot M"></span>ميكانيكا</button><button data-ty="E" aria-pressed="false"><span class="dot E"></span>كهرباء</button><button data-ty="ME" aria-pressed="false"><span class="dot ME"></span>ميكانيكا وكهرباء</button>
+        </div>
         <button class="chipbtn" id="tExpand">افتح الكل</button>
         <button class="chipbtn" id="tCollapse">اقفل الكل</button>
         <button class="chipbtn" id="tCenter">توسيط</button>
@@ -351,6 +405,30 @@ button.chip{cursor:pointer;background:rgba(255,181,71,.18);color:#FFE08A}
         <span class="dot" id="selDot"></span>
         <span class="t"><span class="nm" id="selName"></span><span class="cd code" id="selCode"></span></span>
         <button class="btn" id="selOpen">تفاصيل</button>
+      </div>
+    </section>
+
+    <section class="page items-page" id="pg-items" hidden>
+      <div class="it-inner">
+        <div class="it-bar">
+          <input id="iq" type="search" placeholder="اسم الجزء أو الكود أو رقم الصندوق" aria-label="بحث في الأصناف">
+          <button class="icon-btn" id="iScan" aria-label="مسح QR"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/></svg></button>
+        </div>
+        <div class="it-filters">
+          <div class="seg" id="iType" role="group" aria-label="نوع المكون">
+            <button data-ty="" aria-pressed="true">الكل</button><button data-ty="M" aria-pressed="false"><span class="dot M"></span>ميكانيكا</button><button data-ty="E" aria-pressed="false"><span class="dot E"></span>كهرباء</button><button data-ty="ME" aria-pressed="false"><span class="dot ME"></span>ميكانيكا وكهرباء</button>
+          </div>
+          <select id="iSec" aria-label="القسم"><option value="">كل الأقسام</option></select>
+          <select id="iBox" aria-label="الصندوق"><option value="">كل الصناديق</option></select>
+          <label class="chk"><input type="checkbox" id="iPh"> بصور بس</label>
+          <button class="btn" id="iExport"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>استخراج <span id="iExpN"></span></button>
+        </div>
+        <div class="it-count" id="iCount"></div>
+        <div class="it-table" id="iTable" role="table" aria-label="جدول الأصناف">
+          <div class="it-row it-hd" role="row"><span>صورة</span><span>الكود</span><span>اسم الجزء</span><span>القسم</span><span>النوع</span><span>الصندوق</span><span>المواصفات</span></div>
+          <div id="iBody"></div>
+        </div>
+        <button class="btn ghost it-more" id="iMore" hidden>عرض المزيد</button>
       </div>
     </section>
 
@@ -561,12 +639,14 @@ $("#drq").addEventListener("input", () => renderBoxList());
 $("#drScan").addEventListener("click", () => openScanner());
 
 /* ================= tree (constellation) ================= */
-const T = { built:false };
+const T = { built:false, type:"" };
+const typeMatch = (o, k) => !k || tyOf(o)[1] === k;
 function buildTree(){
   if(T.built) return;
   if(typeof d3 === "undefined"){ $("#pg-tree").insertAdjacentHTML("beforeend",'<div class="empty" style="position:absolute;inset:40% 0 auto">مكتبة الرسم لم تُحمّل. اتأكد من الاتصال بالإنترنت.</div>'); return; }
   T.built = true;
-  const nest = id => { const c=(kids.get(id)||[]).map(nest); return c.length?{id,children:c}:{id}; };
+  const k = T.type;
+  const nest = id => { const c=(kids.get(id)||[]).map(nest).filter(Boolean); if(id!==ROOT && !c.length && !typeMatch(parts.get(id),k)) return null; return c.length?{id,children:c}:{id}; };
   T.root = d3.hierarchy(nest(ROOT)); T.all = T.root.descendants();
   T.all.forEach(d => { d._children = d.children; d.uid = d.data.id; });
   T.byId = new Map(T.all.map(d=>[d.uid,d]));
@@ -624,8 +704,17 @@ function centerOn(d, dur=600, k){
   const x = d.depth===0 ? r.width - (r.width<860?26:150) : r.width/2;
   T.svg.transition().duration(REDUCED?0:dur).call(T.zoom.transform, d3.zoomIdentity.translate(x - NX(d)*scale, r.height/2 - NY(d)*scale).scale(scale));
 }
+function setTreeType(k){
+  T.type = k;
+  document.querySelectorAll("#tType button").forEach(b => b.setAttribute("aria-pressed", b.dataset.ty===k));
+  if(T.svg){ T.svg.selectAll("*").remove(); T.svg.on(".zoom", null); }
+  T.built = false; T.lit = null; T.sel = null; $("#selbar").hidden = true;
+  buildTree();
+}
+document.querySelectorAll("#tType button").forEach(b => b.addEventListener("click", () => setTreeType(b.dataset.ty)));
 function focusPart(id){
   if(!T.built) return;
+  if(!T.byId.get(id) && T.type) setTreeType("");
   const d = T.byId.get(id); if(!d) return;
   d.ancestors().reverse().forEach(a => { if(a._children && a!==d) a.children = a._children; });
   update(d.parent || d); selectNode(d);
@@ -867,7 +956,8 @@ async function refreshData(){
   if(!d.ok) throw new Error(d.error);
   store("iraqline_cache", d); ingest(d);
   const sel = currentBox && currentBox.id;
-  SHIP.built = false;
+  SHIP.built = false; IT.built = false;
+  if(!$("#pg-items").hidden) buildItems();
   if(!$("#pg-ship").hidden){ buildShip(); if(sel && boxById.has(sel)) openBox(sel); else closeBox(); }
 }
 
@@ -891,13 +981,95 @@ document.addEventListener("keydown", e => {
   else closeBox();
 });
 
+/* ================= items page ================= */
+const IT = { type:"", shown:0, list:[], built:false };
+const secOf = id => { const p = pathOf(id); return p.length > 1 ? p[1] : p[0]; };
+function buildItemsFilters(){
+  const secs = [...(kids.get(ROOT)||[])].map(id => parts.get(id));
+  const sv = $("#iSec").value, bv = $("#iBox").value;
+  $("#iSec").innerHTML = `<option value="">كل الأقسام</option>` + secs.map(s => `<option value="${s.id}">${esc(s.n)}</option>`).join("");
+  $("#iBox").innerHTML = `<option value="">كل الصناديق</option><option value="__none">من غير صندوق</option>` + boxes.map(b => `<option value="${b.id}">صندوق ${esc(b.no)}</option>`).join("");
+  $("#iSec").value = sv; $("#iBox").value = bv;
+}
+function filterItems(){
+  const v = norm($("#iq").value), sec = $("#iSec").value, bx = $("#iBox").value, ph = $("#iPh").checked;
+  return [...parts.values()].filter(o => {
+    if(o.id === ROOT) return false;
+    if(!typeMatch(o, IT.type)) return false;
+    if(sec && secOf(o.id).id !== sec) return false;
+    if(bx === "__none" ? !!o.box : (bx && o.box !== bx)) return false;
+    if(ph && !(o.photoRefs||[]).length) return false;
+    if(v && !(norm(o.n).includes(v) || o.id.includes(v) || norm(o.box).includes(v))) return false;
+    return true;
+  });
+}
+const thumbObs = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => {
+  if(!e.isIntersecting) return; thumbObs.unobserve(e.target); fillThumb(e.target);
+}), {rootMargin:"300px"}) : null;
+function fillThumb(el){
+  loadImg(el.dataset.ref).then(src => { el.innerHTML = `<img src="${src}" alt="">`; }).catch(() => { el.innerHTML = `<span class="th-none">!</span>`; });
+}
+function itemRow(o){
+  const ty = tyOf(o), refs = o.photoRefs || [], b = boxById.get(o.box), s = secOf(o.id);
+  const th = !USER.media ? `<span class="th-none"></span>` : refs.length ? `<span class="th" data-ref="${refs[0][0]}"><span class="ph-load"></span></span>` : `<span class="th-none"></span>`;
+  return `<button class="it-row" role="row" data-open="${o.id}">
+    <span class="c-th">${th}${refs.length>1?`<i class="th-n">${refs.length}</i>`:""}</span>
+    <span class="c-cd code">${o.id}</span>
+    <span class="c-nm">${esc(o.n)}</span>
+    <span class="c-sec">${esc(s && s.id!==o.id ? s.n : "")}</span>
+    <span class="c-ty"><span class="dot ${ty[1]}"></span>${ty[0]}</span>
+    <span class="c-bx">${b ? "صندوق " + esc(b.no) : ""}</span>
+    <span class="c-sp">${esc(o.spec||"")}</span>
+  </button>`;
+}
+function renderItems(reset=true){
+  if(reset){ IT.list = filterItems(); IT.shown = 0; $("#iBody").innerHTML = ""; }
+  const next = IT.list.slice(IT.shown, IT.shown + 80);
+  $("#iBody").insertAdjacentHTML("beforeend", next.map(itemRow).join(""));
+  IT.shown += next.length;
+  $("#iBody").querySelectorAll(".th[data-ref]:not([data-w])").forEach(el => { el.dataset.w = 1; thumbObs ? thumbObs.observe(el) : fillThumb(el); });
+  $("#iCount").textContent = IT.list.length ? `${IT.list.length} صنف` : "";
+  if(!IT.list.length) $("#iBody").innerHTML = `<div class="empty">مفيش أصناف بالفلتر ده</div>`;
+  $("#iExpN").textContent = `(${IT.list.length})`;
+  $("#iMore").hidden = IT.shown >= IT.list.length;
+}
+function buildItems(){
+  if(!IT.built){ IT.built = true; buildItemsFilters(); }
+  renderItems();
+}
+let iqT; $("#iq").addEventListener("input", () => { clearTimeout(iqT); iqT = setTimeout(renderItems, 150); });
+["iSec","iBox","iPh"].forEach(id => $("#"+id).addEventListener("change", () => renderItems()));
+document.querySelectorAll("#iType button").forEach(b => b.addEventListener("click", () => {
+  IT.type = b.dataset.ty;
+  document.querySelectorAll("#iType button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderItems();
+}));
+$("#iMore").addEventListener("click", () => renderItems(false));
+$("#iScan").addEventListener("click", () => openScanner());
+$("#iExport").addEventListener("click", () => {
+  const list = IT.built ? IT.list : filterItems();
+  const head = ["الكود","اسم الجزء","كود الأب","اسم الأب","القسم","المسار","النوع","رقم الصندوق","الوصف","المواصفات الفنية","ملاحظات الفك والتركيب","ملاحظات عامة","عدد الصور","فيديو"];
+  const q = v => { v = String(v ?? ""); return /[",\n\r]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v; };
+  const rows = list.map(o => {
+    const par = parts.get(o.p), b = boxById.get(o.box), s = secOf(o.id);
+    return [o.id, o.n, o.p, par ? par.n : "", s && s.id!==o.id ? s.n : "", trailText(o.id), tyOf(o)[0], b ? b.no : "", o.desc, o.spec, o.asm, o.notes, (o.photoRefs||[]).length, o.hasVideo ? "نعم" : ""];
+  });
+  const csv = "﻿" + [head, ...rows].map(r => r.map(q).join(",")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
+  const d = new Date(), p2 = n => String(n).padStart(2,"0");
+  a.download = `iraq-line-parts-${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}.csv`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+
 /* ================= tabs ================= */
 function setTab(name){
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===name));
-  ["ship","tree","search"].forEach(n => $("#pg-"+n).hidden = n!==name);
+  ["ship","tree","items","search"].forEach(n => $("#pg-"+n).hidden = n!==name);
   if(name!=="ship") closeBox();
   if(name==="ship") buildShip();
   if(name==="tree") buildTree();
+  if(name==="items") buildItems();
   if(name==="search") setTimeout(()=>$("#sq").focus({preventScroll:true}),50);
   history.replaceState(null,"","#"+name);
 }
@@ -967,7 +1139,7 @@ function enterApp(offline){
   if(entered) return; entered = true;
   const h = location.hash.replace("#","");
   requestAnimationFrame(() => {
-    setTab(["tree","search"].includes(h) ? h : "ship");
+    setTab(["tree","items","search"].includes(h) ? h : "ship");
     const q = new URLSearchParams(location.search).get("id");
     if(q && parts.has(q.trim().toLowerCase())) openPart(q.trim().toLowerCase());
   });
