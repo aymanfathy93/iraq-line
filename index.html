@@ -961,7 +961,7 @@ async function saveEditor(){
     openPart(ED.id);
   }catch(err){
     const k = String(err.message||"");
-    $("#edErr").textContent = (ERR_TXT[k] || "حصلت مشكلة في الحفظ") + (done ? ` (اتحفظ ${done} من ${steps})` : "") + ". اتأكد من النت وجرّب تاني.";
+    $("#edErr").textContent = (ERR_TXT[k] || ("حصلت مشكلة في الحفظ [" + (k || "بدون رسالة") + "]")) + (done ? ` (اتحفظ ${done} من ${steps})` : "") + ". اتأكد من النت وجرّب تاني.";
     $("#edProg").hidden = true;
   }
   ED.busy = false; const sv = $("#edSave"); if(sv) sv.disabled = false;
